@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screenly — Free Browser Screen Recorder, No Uploads</title>
+<meta name="description" content="Screenly records your screen, window or tab right in your browser — with optional microphone or system audio, pause and resume, a live timer, and a WebM download. Nothing is uploaded.">
+<link rel="canonical" href="https://screenly-app.vercel.app">
+<meta property="og:title" content="Screenly — Free Browser Screen Recorder">
+<meta property="og:description" content="Record your screen, window or tab in your browser, with optional mic or system audio, pause and resume, and a WebM download. Nothing is uploaded.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://screenly-app.vercel.app">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Screenly — Free Browser Screen Recorder">
+<meta name="twitter:description" content="Record your screen, window or tab in your browser, with optional mic or system audio, pause and resume, and a WebM download. Nothing is uploaded.">
+<meta name="theme-color" content="#0B0B0F">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">S</span><span class="brand-name">Screenly</span></div>
+  <p class="tagline">Record your screen, window or tab in your browser. No uploads, no accounts, no install.</p>
+</header>
+
+<main class="layout">
+  <section class="panel" aria-label="Recorder">
+    <h2>Recorder</h2>
+    <p class="muted" id="compatNote" hidden>Your browser does not support screen capture (getDisplayMedia) or recording (MediaRecorder). Screenly needs a current version of Chrome, Edge, Firefox or Safari. The rest of this page is still readable, but recording is disabled here.</p>
+    <p class="muted">When you press Start, your browser will ask which screen, window or tab to share. Nothing is recorded until you pick one and confirm.</p>
+
+    <div class="timer-box" aria-live="polite">
+      <span class="rec-dot" id="recDot" hidden></span>
+      <span class="timer" id="timerText">00:00:00.0</span>
+      <span class="timer-state" id="timerStateText">Ready</span>
+    </div>
+    <p class="countdown" id="countdownText" hidden></p>
+    <p class="status" id="statusText">Ready. Choose your settings, then press Start recording.</p>
+    <p class="muted">Estimated size so far: <span id="sizeText">0 B</span></p>
+
+    <div class="row">
+      <button type="button" class="btn" id="startBtn">Start recording</button>
+      <button type="button" class="btn secondary" id="pauseBtn" disabled>Pause</button>
+      <button type="button" class="btn secondary" id="resumeBtn" disabled>Resume</button>
+      <button type="button" class="btn secondary" id="stopBtn" disabled>Stop</button>
+      <button type="button" class="btn secondary" id="cancelCountdownBtn" hidden>Cancel countdown</button>
+    </div>
+    <p class="muted">Keyboard: press Space to pause or resume while recording (not while typing in a field).</p>
+
+    <h2>Settings</h2>
+    <label class="field">Audio source
+      <select id="audioSourceSelect">
+        <option value="system" selected>System audio (if the browser offers it)</option>
+        <option value="mic">Microphone only</option>
+        <option value="both">System audio + microphone</option>
+        <option value="none">No audio</option>
+      </select>
+    </label>
+    <label class="field check"><input type="checkbox" id="micToggle" checked> Microphone on (applies when the audio source includes the mic)</label>
+    <label class="field">Video quality (bitrate)
+      <select id="bitrateSelect">
+        <option value="2500000">Standard — 2.5 Mbps</option>
+        <option value="5000000" selected>High — 5 Mbps</option>
+        <option value="8000000">Maximum — 8 Mbps</option>
+      </select>
+    </label>
+    <label class="field">Frame rate hint
+      <select id="frameRateSelect">
+        <option value="30" selected>30 fps</option>
+        <option value="60">60 fps</option>
+        <option value="15">15 fps (smaller files)</option>
+      </select>
+    </label>
+    <label class="field">Countdown before recording
+      <select id="countdownSelect">
+        <option value="0" selected>None — start immediately</option>
+        <option value="3">3 seconds (3-2-1)</option>
+        <option value="5">5 seconds</option>
+      </select>
+    </label>
+    <p class="muted">The frame rate is a hint: the browser may record slower on a busy machine. Higher bitrates make larger files.</p>
+  </section>
+
+  <section class="panel" aria-label="Preview">
+    <h2>Preview</h2>
+    <div id="previewWrap" hidden>
+      <video id="previewVideo" controls playsinline></video>
+      <p class="selected" id="previewNameText"></p>
+      <p class="muted" id="previewMetaText"></p>
+      <div class="row">
+        <a class="btn" id="downloadBtn" href="#" download>Download recording</a>
+        <button type="button" class="btn secondary" id="discardBtn">Discard and re-record</button>
+        <button type="button" class="btn secondary" id="newBtn">Keep and record another</button>
+      </div>
+      <p class="muted">Preview and download are the same recording — what you watch here is exactly what the file contains.</p>
+    </div>
+    <p class="muted" id="previewEmptyNote">Your finished recording will appear here after you press Stop, ready to watch and download.</p>
+
+    <h2>Recordings this session</h2>
+    <div id="recordingsList"></div>
+    <p class="muted" id="recordingCountText">No recordings yet this session.</p>
+    <p class="muted">Recordings live only in this tab. Close or refresh the page and they are gone — download anything you want to keep first.</p>
+  </section>
+
+  <section class="panel" aria-label="How it works and honest notes">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>Choose audio, quality and an optional countdown.</li>
+      <li>Press Start and pick a screen, window or tab in the browser picker.</li>
+      <li>Pause and resume any time; press Stop when you are done.</li>
+      <li>Watch the preview, then download the recording from this page.</li>
+    </ol>
+
+    <h2>Honest notes</h2>
+    <p><strong>MP4 is not produced directly.</strong> Browsers record to WebM in most cases (Safari may produce MP4). Your download is a .webm file unless your browser reports otherwise. To get an MP4, convert it with a desktop tool — for example, <code>ffmpeg -i screenly-recording.webm screenly-recording.mp4</code>.</p>
+    <p><strong>Audio depends on your browser and what you share.</strong> Chrome and Edge can capture audio from a shared tab; sharing a whole screen often captures no system audio at all, and some browsers offer no system audio. If a recording comes back silent, try sharing the tab itself instead of the screen, and check the audio source above.</p>
+    <p><strong>No uploads, anywhere.</strong> Capture and recording happen on your device. Screenly has no server to send anything to, and no recording is stored after you close the tab.</p>
+    <p><strong>Stopping from the browser counts too.</strong> If you press "Stop sharing" in your browser's own sharing bar, the recording ends the same way as pressing Stop here, and the clip is saved to your session list.</p>
+    <p class="muted">Recording quality also depends on your machine: a busy computer, a 4K screen or 60 fps can make large files and dropped frames. Standard quality at 30 fps is the safe default.</p>
+  </section>
+</main>
+<footer class="footer">
+  <p>Built by krrish · <a href="https://github.com/codewithkrrish/screenly">GitHub</a> · <a href="https://www.instagram.com/krrishx.ai">Instagram</a></p>
+  <p>Your recordings are processed locally in your browser and never uploaded.</p>
+</footer>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
